@@ -47,16 +47,16 @@ void test_analysis::CheckOverlap (std::vector<RecLeptonFormat>& electrons,
           if (dr < 0.2)
           {
               cout << "(e,j) overlap detected: DR = " << dr << endl;
-              if (!it_jet->btag())
+              if (it_jet->btag())
               {
-                  cout << "Jet not b-tagged, keeping jet" << endl;
+                  cout << "Jet b-tagged, keeping jet" << endl;
                   it_electron = electrons.erase(it_electron);
                   electron_removed = true;
                   break;
               }
               else
               {
-                  cout << "Jet is b-tagged, keeping electron" << endl;
+                  cout << "Jet is not b-tagged, keeping electron" << endl;
                   it_jet = jets.erase(it_jet);
                   jet_removed = true;
               }
@@ -113,7 +113,7 @@ void test_analysis::CheckOverlap (std::vector<RecLeptonFormat>& electrons,
 // -----------------------------------------------------------------------------
 bool test_analysis::Execute(SampleFormat& sample, const EventFormat& event)
 {
-  if (event.mc() == 0)
+  if (event.rec() == NULL)
       return true;
 
   cout << "Initial Electrons: " << event.rec()->electrons().size() << ", "
@@ -195,7 +195,7 @@ bool test_analysis::Execute(SampleFormat& sample, const EventFormat& event)
   cout << "Baseline jets (after overlap removal): " << jets.size() << endl;
   cout << "***" << endl;
   
-  // Extract signal electrons (pt > 25GeV)
+  // Extract signal electrons (pt >= 25GeV)
   for (std::vector<RecLeptonFormat>::const_iterator it_electron = electrons.begin();
        it_electron != electrons.end();
        )
@@ -213,7 +213,7 @@ bool test_analysis::Execute(SampleFormat& sample, const EventFormat& event)
       }
   }
   
-  // Extract signal muons (pt > 25GeV)
+  // Extract signal muons (pt >= 25GeV)
   for (std::vector<RecLeptonFormat>::const_iterator it_muon = muons.begin();
        it_muon != muons.end();
        )
