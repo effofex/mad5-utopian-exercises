@@ -42,10 +42,11 @@ void test_analysis::RemoveOverlap(std::vector<RecJetFormat> &jets,
                                   std::vector<RecLeptonFormat> &muons) {
   // Second step from Table 3.
   for(auto& electron: electrons) {
-    for(auto jet_it = jets.begin(); jet_it != jets.end(); jet_it++) {
-      if(jet_it->dr(electron) < 0.2) {
-        jets.erase(jet_it);
-        // we have to move iterator back after removing the element
+    for(auto jet_it = jets.begin(); jet_it != jets.end();) {
+      if(jet_it->dr(electron) < 0.2 && jet_it->true_btag()) {
+        jet_it = jets.erase(jet_it);
+        // Iterator now points to element after the removed one, and it will be further 
+        // incremented by the for loop, so we need to move it back.
         jet_it--;
       }
     }
@@ -53,20 +54,19 @@ void test_analysis::RemoveOverlap(std::vector<RecJetFormat> &jets,
 
   for(auto& jet: jets) {
     // first compare all electrons with the jet
-    for(auto electron_it = electrons.begin(); electron_it != electrons.end(); electron_it++) {
+    for(auto electron_it = electrons.begin(); electron_it != electrons.end();) {
       MAfloat32 threshold = min(0.4, 0.04 + 10.0 / electron_it->pt());
       if(electron_it->dr(jet) < threshold) {
-        electrons.erase(electron_it);
+        electron_it = electrons.erase(electron_it);
         electron_it--;
       }
     }
     // and then all muons
-    for(auto muon_it = muons.begin(); muon_it != muons.end(); muon_it++) {
+    for(auto muon_it = muons.begin(); muon_it != muons.end();) {
       MAfloat32 threshold = min(0.4, 0.04 + 10.0 / muon_it->pt());
       if(muon_it->dr(jet) < threshold) {
-        muons.erase(muon_it);
+        muon_it = muons.erase(muon_it);
         muon_it--;
-      }
     }
   }
 }
@@ -162,4 +162,5 @@ bool test_analysis::Execute(SampleFormat& sample, const EventFormat& event)
   
   return true;
 }
+
 
